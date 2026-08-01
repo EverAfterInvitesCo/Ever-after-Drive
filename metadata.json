@@ -1,0 +1,6 @@
+{
+  "name": "EverAfterInvites - Luxury Wedding Invitation",
+  "description": "A romantic, modern, luxury one-page wedding invitation website featuring a cinematic curtain intro, driving hero video, interactive scratch-off date reveal, venue details, polaroid memory gallery, and RSVP form.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
