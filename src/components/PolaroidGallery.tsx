@@ -19,7 +19,7 @@ interface PolaroidItem {
 const polaroidData: PolaroidItem[] = [
   {
     id: 1,
-    src: '/img1.jpg',
+    src: `${import.meta.env.BASE_URL}img1.jpg`,
     fallbackSrc: fallbackPhoto1,
     title: 'Sunset Whispers on the Coast',
     date: 'Big Sur, June 2025',
@@ -27,7 +27,7 @@ const polaroidData: PolaroidItem[] = [
   },
   {
     id: 2,
-    src: '/img2.jpg',
+    src: `${import.meta.env.BASE_URL}img2.jpg`,
     fallbackSrc: fallbackPhoto2,
     title: 'Vintage Getaway Ride',
     date: 'Tuscany, August 2025',
@@ -35,7 +35,7 @@ const polaroidData: PolaroidItem[] = [
   },
   {
     id: 3,
-    src: '/img3.jpg',
+    src: `${import.meta.env.BASE_URL}img3.jpg`,
     fallbackSrc: fallbackPhoto3,
     title: 'Dancing Under Fairy Lights',
     date: 'Napa Valley, October 2025',
@@ -43,7 +43,7 @@ const polaroidData: PolaroidItem[] = [
   },
   {
     id: 4,
-    src: '/img4.jpg',
+    src: `${import.meta.env.BASE_URL}img4.jpg`,
     fallbackSrc: fallbackPhoto4,
     title: 'The Proposal Moment',
     date: 'Amalfi, December 2025',
