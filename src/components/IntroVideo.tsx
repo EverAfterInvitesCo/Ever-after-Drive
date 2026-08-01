@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Play } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface IntroVideoProps {
   onComplete: () => void;
@@ -124,17 +124,6 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete, videoSrc = `
               </div>
             </div>
           )}
-
-          {/* Quick Skip / Enter Button Overlay */}
-          <div className="absolute bottom-8 right-8 z-20">
-            <button
-              onClick={handleFinish}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-black/50 border border-[#C8A85D]/30 backdrop-blur-md text-[#FAF7F2] font-sans text-xs tracking-widest uppercase hover:bg-[#C8A85D] hover:text-[#1C1815] transition-all duration-300 cursor-pointer shadow-lg"
-            >
-              <span>Skip Intro</span>
-              <Play className="w-3.5 h-3.5 fill-current" />
-            </button>
-          </div>
         </motion.div>
       )}
     </AnimatePresence>
