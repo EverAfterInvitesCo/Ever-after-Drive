@@ -4,9 +4,10 @@ import { Sparkles, Play } from 'lucide-react';
 
 interface IntroVideoProps {
   onComplete: () => void;
+  videoSrc?: string;
 }
 
-export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
+export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete, videoSrc = `${import.meta.env.BASE_URL}curtain.mp4` }) => {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isFading, setIsFading] = useState(false);
@@ -57,7 +58,7 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
           {!hasError ? (
             <video
               ref={videoRef}
-              src="/curtain.mp4"
+              src={videoSrc}
               playsInline
               autoPlay
               muted

@@ -16,7 +16,7 @@ export const Hero: React.FC<HeroProps> = ({ onScrollToNext }) => {
       {!videoError ? (
         <video
           ref={videoRef}
-          src="/driving.mp4"
+          src={`${import.meta.env.BASE_URL}driving.mp4`}
           playsInline
           autoPlay
           loop

@@ -30,7 +30,10 @@ export default function App() {
       {/* Intro Curtain Video Overlay */}
       <AnimatePresence>
         {!introFinished && (
-          <IntroVideo onComplete={() => setIntroFinished(true)} />
+          <IntroVideo 
+            onComplete={() => setIntroFinished(true)} 
+            videoSrc={`${import.meta.env.BASE_URL}curtain.mp4`}
+          />
         )}
       </AnimatePresence>
 
@@ -50,7 +53,7 @@ export default function App() {
             <button
               onClick={replayIntro}
               title="Replay Curtain Intro"
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-md border border-[#C8A85D]/40 text-[#2C2C2C] text-xs font-sans uppercase tracking-widest hover:bg-[#C8A85D] hover:text-white transition-all shadow-md cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/85 backdrop-blur-md border border-[#C8A85D]/40 text-[#2C2C2C] text-xs font-sans uppercase tracking-widest hover:bg-[#C8A85D] hover:text-white transition-all shadow-md cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5 text-[#C8A85D] group-hover:text-white" />
               <span className="hidden sm:inline">Intro</span>
