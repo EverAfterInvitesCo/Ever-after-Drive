@@ -39,10 +39,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTriggered = fa
 
   return (
     <div className="fixed bottom-6 left-6 z-40">
-      {/* Hidden HTML5 Audio Element */}
+      {/* Hidden HTML5 Audio Element with dynamic BASE_URL */}
       <audio
         ref={audioRef}
-        src="/fostanekelabyad.mp3"
+        src={`${import.meta.env.BASE_URL}fostanekelabyad.mp3`}
         loop
         preload="auto"
       />
