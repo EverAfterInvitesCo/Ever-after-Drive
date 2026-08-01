@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles } from 'lucide-react';
 
 interface IntroVideoProps {
   onComplete: () => void;
@@ -93,34 +92,6 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete, videoSrc = `
                   <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-black/40 to-transparent" />
                   <div className="h-full w-full bg-[radial-gradient(#C8A85D_1px,transparent_1px)] [background-size:24px_24px] opacity-5" />
                 </motion.div>
-              </div>
-
-              {/* Central Monogram Card */}
-              <div className="relative z-10 text-center px-6 max-w-md">
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.8 }}
-                  className="inline-block p-8 rounded-full border border-[#C8A85D]/40 bg-black/40 backdrop-blur-md mb-6 gold-glow"
-                >
-                  <span className="font-script text-5xl md:text-6xl text-[#E2C779]">S & A</span>
-                </motion.div>
-                
-                <h1 className="font-serif text-2xl md:text-3xl tracking-widest uppercase text-[#FAF7F2] mb-3">
-                  Sophia & Alexander
-                </h1>
-                
-                <p className="font-sans text-xs md:text-sm tracking-widest text-[#C8A85D] uppercase mb-8">
-                  The Grand Reveal
-                </p>
-
-                <button
-                  onClick={handleFinish}
-                  className="group relative inline-flex items-center gap-3 px-8 py-3.5 rounded-full border border-[#C8A85D] text-[#FAF7F2] font-sans text-xs uppercase tracking-widest hover:bg-[#C8A85D] hover:text-[#1C1815] transition-all duration-500 shadow-lg cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4 text-[#C8A85D] group-hover:text-[#1C1815] transition-colors" />
-                  <span>Open Invitation</span>
-                </button>
               </div>
             </div>
           )}
