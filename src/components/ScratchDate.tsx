@@ -1,917 +1,379 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EverAfterInvites — Digital Wedding Invitations</title>
-<link rel="icon" type="image/png" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Cormorant+Garamond:ital@1&family=Poppins:wght@300;400;500;600&family=Markazi+Text:wght@500;600;700&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --maroon-950:#3E0A0E;
-    --maroon-800:#6B121C;
-    --maroon-700:#7E1A26;
-    --maroon-600:#93222F;
-    --cream-50:#FBF7F1;
-    --cream-100:#F3EAE0;
-    --cream-200:#E9DDCE;
-    --gold-500:#B9904F;
-    --gold-300:#D8B87C;
-    --ink-900:#241012;
-    --ink-700:#4A2A2C;
-    --shadow-lg:0 30px 60px -20px rgba(62,10,14,0.35);
-    --ease:cubic-bezier(.22,1,.36,1);
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { motion } from 'motion/react';
+import confetti from 'canvas-confetti';
+import { Sparkles, Calendar, CheckCircle2 } from 'lucide-react';
+
+interface DateCircleProps {
+  title: string;
+  value: string;
+  subtext: string;
+  index: number;
+  onReveal?: () => void;
+}
+
+// Robust helper to safely invoke canvas-confetti in Vite/React ESM environments
+const fireConfetti = (options?: confetti.Options) => {
+  try {
+    const fn = (confetti as any)?.default || confetti;
+    if (typeof fn === 'function') {
+      fn(options);
+    }
+  } catch (err) {
+    console.warn('Confetti trigger error:', err);
   }
-
-  *{margin:0;padding:0;box-sizing:border-box;}
-
-  html{scroll-behavior:smooth;}
-
-  body{
-    background:var(--cream-50);
-    color:var(--ink-900);
-    font-family:'Poppins',sans-serif;
-    overflow-x:hidden;
-    -webkit-font-smoothing:antialiased;
-  }
-
-  body.rtl{
-    direction:rtl;
-  }
-  body.rtl, body.rtl input, body.rtl button{
-    font-family:'Cairo',sans-serif;
-  }
-
-  .en-only{display:inline;}
-  .ar-only{display:none;}
-  body.rtl .en-only{display:none;}
-  body.rtl .ar-only{display:inline;}
-  body.rtl .ar-only.block{display:block;}
-  .en-only.block{display:block;}
-
-  h1,h2,h3,.display{
-    font-family:'Playfair Display',serif;
-    font-weight:600;
-    letter-spacing:-0.01em;
-    color:var(--maroon-950);
-  }
-  body.rtl h1,body.rtl h2,body.rtl h3,body.rtl .display{
-    font-family:'Markazi Text',serif;
-    font-weight:700;
-  }
-
-  .script{
-    font-family:'Cormorant Garamond', serif;
-    font-style:italic;
-    font-weight:400;
-    color:var(--gold-500);
-  }
-  body.rtl .script{
-    font-family:'Markazi Text',serif;
-    font-style:normal;
-    color:var(--gold-500);
-  }
-
-  .eyebrow{
-    font-size:0.72rem;
-    letter-spacing:0.22em;
-    text-transform:uppercase;
-    color:var(--gold-500);
-    font-weight:600;
-  }
-  body.rtl .eyebrow{
-    font-family:'Cairo',sans-serif;
-    letter-spacing:0.02em;
-    font-size:0.85rem;
-  }
-
-  a{text-decoration:none;color:inherit;}
-  img{display:block;max-width:100%;}
-  section{position:relative;}
-  .wrap{max-width:1140px;margin:0 auto;padding:0 28px;}
-
-  /* ---------- NAV ---------- */
-  header.site-nav{
-    position:fixed;top:0;left:0;right:0;z-index:100;
-    background:rgba(251,247,241,0.86);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid rgba(62,10,14,0.08);
-  }
-  .nav-inner{
-    max-width:1140px;margin:0 auto;padding:14px 28px;
-    display:flex;align-items:center;justify-content:space-between;gap:24px;
-  }
-  .nav-logo{display:flex;align-items:center;gap:10px;}
-  .nav-logo img{height:38px;width:auto;border-radius:6px;}
-  .nav-logo span{font-family:'Playfair Display',serif;font-weight:600;font-size:1rem;color:var(--maroon-950);letter-spacing:0.01em;}
-  body.rtl .nav-logo span{font-family:'Markazi Text',serif;font-size:1.2rem;}
-
-  .nav-links{display:flex;gap:32px;align-items:center;}
-  .nav-links a{
-    font-size:0.85rem;font-weight:500;color:var(--ink-700);
-    position:relative;padding:4px 0;
-  }
-  body.rtl .nav-links a{font-size:0.92rem;}
-  .nav-links a::after{
-    content:"";position:absolute;bottom:-2px;left:0;right:0;height:1px;
-    background:var(--gold-500);transform:scaleX(0);transition:transform .3s var(--ease);
-  }
-  .nav-links a:hover::after{transform:scaleX(1);}
-
-  .nav-actions{display:flex;align-items:center;gap:14px;}
-  .lang-toggle{
-    border:1px solid var(--maroon-800);
-    background:transparent;color:var(--maroon-800);
-    font-size:0.72rem;letter-spacing:0.08em;font-weight:600;
-    padding:7px 13px;border-radius:100px;cursor:pointer;
-    font-family:'Poppins',sans-serif;
-    transition:all .25s var(--ease);
-  }
-  .lang-toggle:hover{background:var(--maroon-800);color:var(--cream-100);}
-
-  .btn{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:12px 24px;border-radius:100px;
-    font-size:0.82rem;font-weight:600;letter-spacing:0.02em;
-    cursor:pointer;border:1px solid transparent;
-    transition:transform .3s var(--ease), box-shadow .3s var(--ease), background .3s var(--ease);
-    white-space:nowrap;
-  }
-  body.rtl .btn{font-size:0.9rem;}
-  .btn-primary{background:var(--maroon-800);color:var(--cream-50);box-shadow:0 10px 24px -8px rgba(62,10,14,0.5);}
-  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 30px -8px rgba(62,10,14,0.55);}
-  .btn-ghost{border:1px solid var(--maroon-800);color:var(--maroon-800);}
-  .btn-ghost:hover{background:var(--maroon-800);color:var(--cream-50);}
-  .btn-cream{background:var(--cream-50);color:var(--maroon-900);}
-  .btn-outline-cream{border:1px solid rgba(251,247,241,0.5);color:var(--cream-50);}
-  .btn-outline-cream:hover{background:rgba(251,247,241,0.12);}
-  .btn svg{width:15px;height:15px;flex:none;}
-
-  .nav-cta{display:none;}
-  @media(min-width:860px){.nav-cta{display:inline-flex;}}
-
-  .mobile-toggle{display:none;background:none;border:none;cursor:pointer;color:var(--maroon-950);}
-  @media(max-width:859px){
-    .nav-links{display:none;}
-    .mobile-toggle{display:block;}
-  }
-
-  /* ---------- WAX SEAL ---------- */
-  .seal{
-    width:56px;height:56px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;flex:none;
-    background:radial-gradient(circle at 32% 28%, var(--maroon-600), var(--maroon-950) 72%);
-    box-shadow:inset 0 0 0 1px rgba(216,184,124,0.35), 0 6px 16px -6px rgba(0,0,0,0.4);
-    position:relative;
-  }
-  .seal::before{
-    content:"";position:absolute;inset:5px;border-radius:50%;
-    border:1px dashed rgba(216,184,124,0.4);
-  }
-  .seal span{
-    font-family:'Playfair Display',serif;color:var(--gold-300);
-    font-size:1rem;font-weight:600;
-  }
-
-  /* ---------- HERO ---------- */
-  .hero{
-    background:
-      radial-gradient(circle at 82% 8%, rgba(216,184,124,0.16), transparent 40%),
-      radial-gradient(circle at 10% 90%, rgba(216,184,124,0.10), transparent 45%),
-      linear-gradient(160deg, var(--maroon-950) 0%, var(--maroon-800) 55%, var(--maroon-700) 100%);
-    color:var(--cream-100);
-    padding:168px 0 120px;
-    text-align:center;
-    overflow:hidden;
-  }
-  .hero-inner{max-width:760px;margin:0 auto;position:relative;z-index:2;}
-  .hero .seal{margin:0 auto 28px;width:70px;height:70px;}
-  .hero .seal span{font-size:1.25rem;}
-  .hero .eyebrow{color:var(--gold-300);margin-bottom:18px;}
-  .hero h1{
-    font-size:clamp(2.4rem,5.4vw,4.1rem);
-    line-height:1.08;
-    color:var(--cream-50);
-    margin-bottom:22px;
-  }
-  body.rtl .hero h1{font-size:clamp(2.5rem,6vw,4.4rem);line-height:1.25;}
-  .hero p.lead{
-    font-size:1.05rem;line-height:1.7;color:rgba(243,234,224,0.82);
-    max-width:520px;margin:0 auto 40px;
-  }
-  body.rtl .hero p.lead{font-size:1.1rem;}
-  .hero-ctas{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-
-  .hero-frame-strip{
-    display:flex;gap:22px;justify-content:center;margin-top:88px;
-    opacity:0.9;flex-wrap:wrap;
-  }
-  .mini-invite{
-    width:118px;height:168px;border-radius:6px;
-    background:var(--cream-100);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-    box-shadow:var(--shadow-lg);
-    transform:translateY(18px) rotate(var(--r,0deg));
-    transition:transform .5s var(--ease);
-  }
-  .mini-invite:nth-child(1){--r:-6deg;}
-  .mini-invite:nth-child(2){--r:0deg;transform:translateY(0);}
-  .mini-invite:nth-child(3){--r:6deg;}
-  .mini-invite .names{font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--maroon-900);}
-  .mini-invite .rule{width:20px;height:1px;background:var(--gold-500);}
-  .mini-invite .date{font-size:0.55rem;letter-spacing:0.12em;color:var(--ink-700);text-transform:uppercase;}
-
-  /* ---------- SECTION HEADERS ---------- */
-  .section-head{text-align:center;max-width:620px;margin:0 auto 56px;}
-  .section-head .eyebrow{display:block;margin-bottom:14px;}
-  .section-head h2{font-size:clamp(1.9rem,3.6vw,2.7rem);margin-bottom:16px;}
-  body.rtl .section-head h2{font-size:clamp(2.1rem,4vw,3rem);}
-  .section-head p{color:var(--ink-700);line-height:1.7;font-size:0.98rem;}
-  body.rtl .section-head p{font-size:1.05rem;}
-
-  /* ---------- PROCESS ---------- */
-  .process{padding:110px 0;}
-  .process-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;}
-  @media(max-width:800px){.process-grid{grid-template-columns:1fr;gap:44px;}}
-  .process-step{text-align:center;position:relative;}
-  .process-step .seal{margin:0 auto 22px;}
-  .process-step h3{font-size:1.2rem;margin-bottom:10px;}
-  body.rtl .process-step h3{font-size:1.35rem;}
-  .process-step p{color:var(--ink-700);font-size:0.92rem;line-height:1.65;max-width:260px;margin:0 auto;}
-  body.rtl .process-step p{font-size:1rem;}
-  .process-connector{
-    position:absolute;top:28px;left:calc(50% + 56px);width:calc(100% - 112px);
-    height:1px;background:repeating-linear-gradient(90deg, var(--gold-500) 0 6px, transparent 6px 12px);
-  }
-  body.rtl .process-connector{left:auto;right:calc(50% + 56px);}
-  @media(max-width:800px){.process-connector{display:none;}}
-
-  /* ---------- TEMPLATES ---------- */
-  .templates{padding:110px 0;background:var(--cream-100);}
-  .template-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
-  @media(max-width:900px){.template-grid{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:600px){.template-grid{grid-template-columns:repeat(2,1fr);gap:14px;}
-    .t-card .t-name{font-size:0.92rem;}
-    .t-card .t-tag{font-size:0.74rem;}
-    .t-actions{flex-direction:column;gap:6px;}
-  }
-
-  .t-card{
-    background:var(--cream-50);border-radius:16px;overflow:hidden;
-    box-shadow:0 20px 40px -24px rgba(62,10,14,0.25);
-    transition:transform .4s var(--ease), box-shadow .4s var(--ease);
-    display:flex;flex-direction:column;
-  }
-  .t-card:hover{transform:translateY(-6px);box-shadow:0 28px 50px -20px rgba(62,10,14,0.32);}
-  .t-preview{
-    height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-    position:relative;
-  }
-  .t-preview .rule{width:34px;height:1px;background:currentColor;opacity:0.5;}
-  .t-preview .tnames{font-family:'Playfair Display',serif;font-size:1.6rem;}
-  .t-preview .tdate{font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;opacity:0.7;}
-  .t-preview.has-image{padding:0;overflow:hidden;height:auto;aspect-ratio:4/5;}
-  .t-preview.has-image img{
-    width:100%;height:100%;object-fit:cover;object-position:top center;
-    display:block;transition:transform .5s var(--ease);
-  }
-  .t-preview.has-image:hover img{transform:scale(1.04);}
-  .t-preview.has-link{cursor:pointer;}
-  .t-preview.has-link .live-hint{
-    position:absolute;bottom:10px;left:0;right:0;text-align:center;
-    font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;opacity:0;
-    transition:opacity .3s var(--ease);color:#fff;z-index:2;
-  }
-  .t-preview.has-image::after{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(to top, rgba(0,0,0,0.55), transparent 45%);
-    opacity:0;transition:opacity .3s var(--ease);z-index:1;
-  }
-  .t-preview.has-image:hover::after{opacity:1;}
-  .t-preview.has-image:hover .live-hint{opacity:1;}
-  body.rtl .t-preview.has-link .live-hint{font-size:0.72rem;letter-spacing:0.02em;}
-  .t-preview.has-link:hover .live-hint{opacity:0.85;}
-  .t-card.theme-a .t-preview{background:var(--maroon-950);color:var(--cream-50);}
-  .t-card.theme-b .t-preview{background:var(--cream-200);color:var(--maroon-950);}
-  .t-card.theme-c .t-preview{background:#EDE7DC;color:var(--ink-900);}
-  .t-card.theme-d .t-preview{background:var(--ink-900);color:var(--gold-300);}
-  .t-card.theme-e .t-preview{background:var(--maroon-700);color:var(--cream-100);}
-  .t-card.theme-f .t-preview{background:#F6F1E7;color:var(--maroon-800);}
-  .t-body{padding:20px 22px 24px;display:flex;flex-direction:column;gap:12px;flex:1;}
-  .t-body .t-name{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--maroon-950);}
-  body.rtl .t-body .t-name{font-family:'Markazi Text',serif;font-size:1.25rem;}
-  .t-body .t-tag{font-size:0.82rem;color:var(--ink-700);line-height:1.5;flex:1;}
-  body.rtl .t-body .t-tag{font-size:0.92rem;}
-  .t-actions{display:flex;gap:8px;margin-top:auto;}
-  .t-view{
-    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
-    padding:10px 12px;border-radius:100px;background:var(--maroon-800);color:var(--cream-50);
-    font-size:0.78rem;font-weight:600;transition:all .25s var(--ease);
-  }
-  body.rtl .t-view{font-size:0.86rem;}
-  .t-view:hover{background:var(--maroon-950);}
-  .t-view svg{width:13px;height:13px;}
-  .t-dm{
-    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-    padding:10px 14px;border-radius:100px;border:1px solid var(--maroon-800);
-    color:var(--maroon-800);font-size:0.78rem;font-weight:600;
-    transition:all .25s var(--ease);
-  }
-  body.rtl .t-dm{font-size:0.86rem;}
-  .t-dm:hover{background:var(--maroon-800);color:var(--cream-50);}
-  .t-dm svg{width:14px;height:14px;}
-
-  .templates-more{text-align:center;margin-top:48px;}
-
-  /* ---------- PRICING ---------- */
-  .pricing{padding:110px 0;}
-  .price-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;align-items:stretch;}
-  @media(max-width:820px){.price-grid{grid-template-columns:1fr;}}
-
-  .price-card{
-    border-radius:20px;padding:40px 36px;
-    background:var(--cream-50);
-    border:1px solid var(--cream-200);
-    display:flex;flex-direction:column;
-    position:relative;
-  }
-  .price-card.featured{
-    background:linear-gradient(165deg, var(--maroon-950), var(--maroon-800));
-    color:var(--cream-100);border:none;box-shadow:var(--shadow-lg);
-  }
-  .badge{
-    position:absolute;top:24px;inset-inline-end:24px;
-    background:var(--gold-500);color:var(--maroon-950);
-    font-size:0.68rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;
-    padding:6px 12px;border-radius:100px;
-  }
-  body.rtl .badge{font-size:0.78rem;}
-  .price-card h3{font-size:1.3rem;margin-bottom:6px;}
-  .price-card.featured h3{color:var(--cream-50);}
-  body.rtl .price-card h3{font-size:1.5rem;}
-  .price-card .plan-note{font-size:0.85rem;color:var(--ink-700);margin-bottom:24px;}
-  .price-card.featured .plan-note{color:rgba(243,234,224,0.75);}
-  body.rtl .price-card .plan-note{font-size:0.95rem;}
-
-  .price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
-  .price-now{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:700;color:var(--maroon-950);}
-  .price-card.featured .price-now{color:var(--cream-50);}
-  body.rtl .price-now{font-family:'Markazi Text',serif;}
-  .price-was{font-size:1rem;text-decoration:line-through;color:var(--ink-700);opacity:0.6;}
-  .price-card.featured .price-was{color:rgba(243,234,224,0.6);}
-  .price-save{font-size:0.78rem;color:var(--gold-500);font-weight:600;margin-bottom:28px;}
-  body.rtl .price-save{font-size:0.88rem;}
-
-  .price-card ul{list-style:none;display:flex;flex-direction:column;gap:13px;margin-bottom:26px;}
-  .price-card ul li{display:flex;gap:10px;align-items:flex-start;font-size:0.88rem;line-height:1.5;}
-  body.rtl .price-card ul li{font-size:0.96rem;}
-  .price-card ul li svg{width:15px;height:15px;flex:none;margin-top:2px;color:var(--gold-500);}
-
-
-  .price-card .btn{margin-top:auto;justify-content:center;}
-
-  /* ---------- FAQ ---------- */
-  .faq{padding:110px 0;background:var(--cream-100);}
-  .faq-list{max-width:720px;margin:0 auto;}
-  .faq-item{border-bottom:1px solid var(--cream-200);}
-  .faq-q{
-    width:100%;text-align:inherit;background:none;border:none;cursor:pointer;
-    display:flex;align-items:center;justify-content:space-between;gap:16px;
-    padding:22px 4px;font-family:'Playfair Display',serif;font-size:1.02rem;color:var(--maroon-950);
-  }
-  body.rtl .faq-q{font-family:'Markazi Text',serif;font-size:1.2rem;font-weight:700;}
-  .faq-q .plus{flex:none;width:20px;height:20px;position:relative;}
-  .faq-q .plus::before,.faq-q .plus::after{
-    content:"";position:absolute;background:var(--maroon-800);transition:transform .3s var(--ease);
-  }
-  .faq-q .plus::before{top:9px;left:2px;right:2px;height:1.5px;}
-  .faq-q .plus::after{left:9px;top:2px;bottom:2px;width:1.5px;}
-  .faq-item.open .faq-q .plus::after{transform:scaleY(0);}
-  .faq-a{max-height:0;overflow:hidden;transition:max-height .35s var(--ease);}
-  .faq-a p{padding:0 4px 22px;color:var(--ink-700);font-size:0.9rem;line-height:1.7;max-width:640px;}
-  body.rtl .faq-a p{font-size:1rem;}
-
-  /* ---------- CLOSING CTA ---------- */
-  .closing{
-    padding:120px 0;text-align:center;
-    background:linear-gradient(160deg, var(--maroon-800), var(--maroon-950));
-    color:var(--cream-100);
-  }
-  .closing .seal{margin:0 auto 26px;}
-  .closing h2{color:var(--cream-50);font-size:clamp(2rem,4vw,2.8rem);margin-bottom:18px;}
-  .closing p{color:rgba(243,234,224,0.8);max-width:480px;margin:0 auto 36px;line-height:1.7;}
-
-  /* ---------- FOOTER ---------- */
-  footer{padding:64px 0 32px;background:var(--maroon-950);color:rgba(243,234,224,0.75);}
-  .footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;margin-bottom:48px;}
-  @media(max-width:700px){.footer-grid{grid-template-columns:1fr;gap:32px;}}
-  .footer-brand{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-  .footer-brand img{height:34px;border-radius:6px;}
-  .footer-brand span{font-family:'Playfair Display',serif;color:var(--cream-50);font-size:1rem;}
-  body.rtl .footer-brand span{font-family:'Markazi Text',serif;font-size:1.2rem;}
-  footer p.tag{font-size:0.85rem;max-width:280px;line-height:1.6;}
-  footer h4{font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-300);margin-bottom:16px;}
-  body.rtl footer h4{font-size:0.85rem;letter-spacing:0.02em;}
-  footer ul{list-style:none;display:flex;flex-direction:column;gap:10px;}
-  footer ul a{font-size:0.86rem;transition:color .2s;}
-  footer ul a:hover{color:var(--cream-50);}
-  .footer-bottom{
-    border-top:1px solid rgba(243,234,224,0.12);padding-top:24px;
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
-    font-size:0.78rem;
-  }
-
-  .fade-in{opacity:0;transform:translateY(24px);filter:blur(10px);transition:opacity .7s var(--ease), transform .7s var(--ease), filter .7s var(--ease);}
-  .fade-in.visible{opacity:1;transform:translateY(0);filter:blur(0);}
-
-  /* staggered reveal within grouped rows */
-  .process-grid .process-step:nth-child(1){transition-delay:0s;}
-  .process-grid .process-step:nth-child(2){transition-delay:.12s;}
-  .process-grid .process-step:nth-child(3){transition-delay:.24s;}
-  .template-grid .t-card:nth-child(1){transition-delay:0s;}
-  .template-grid .t-card:nth-child(2){transition-delay:.12s;}
-  .template-grid .t-card:nth-child(3){transition-delay:.24s;}
-  .template-grid .t-card:nth-child(4){transition-delay:.36s;}
-  .template-grid .t-card:nth-child(5){transition-delay:.48s;}
-  .price-grid .price-card:nth-child(1){transition-delay:0s;}
-  .price-grid .price-card:nth-child(2){transition-delay:.14s;}
-  .faq-list .faq-item:nth-child(1){transition-delay:0s;}
-  .faq-list .faq-item:nth-child(2){transition-delay:.06s;}
-  .faq-list .faq-item:nth-child(3){transition-delay:.12s;}
-  .faq-list .faq-item:nth-child(4){transition-delay:.18s;}
-  .faq-list .faq-item:nth-child(5){transition-delay:.24s;}
-  .faq-list .faq-item:nth-child(6){transition-delay:.3s;}
-  .faq-list .faq-item:nth-child(7){transition-delay:.36s;}
-  .hero-frame-strip .mini-invite:nth-child(1){transition-delay:0s;}
-  .hero-frame-strip .mini-invite:nth-child(2){transition-delay:.12s;}
-  .hero-frame-strip .mini-invite:nth-child(3){transition-delay:.24s;}
-  .footer-grid > div:nth-child(1){transition-delay:0s;}
-  .footer-grid > div:nth-child(2){transition-delay:.1s;}
-  .footer-grid > div:nth-child(3){transition-delay:.2s;}
-
-  @media(prefers-reduced-motion: reduce){
-    .fade-in{transition:none;opacity:1;transform:none;filter:none;}
-    html{scroll-behavior:auto;}
-  }
-</style>
-</head>
-<body>
-
-<!-- ================= NAV ================= -->
-<header class="site-nav">
-  <div class="nav-inner">
-    <a href="#hero" class="nav-logo">
-      <img src="logo.png" alt="EverAfterInvites">
-    </a>
-    <nav class="nav-links">
-      <a href="#templates"><span class="en-only">Designs</span><span class="ar-only">التصاميم</span></a>
-      <a href="#pricing"><span class="en-only">Pricing</span><span class="ar-only">الأسعار</span></a>
-      <a href="#process"><span class="en-only">Process</span><span class="ar-only">إزاي بنشتغل</span></a>
-      <a href="#faq"><span class="en-only">FAQ</span><span class="ar-only">أسئلة</span></a>
-    </nav>
-    <div class="nav-actions">
-      <button class="lang-toggle" id="langToggle">EN / AR</button>
-      <a class="btn btn-primary nav-cta" href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
-        <span class="en-only">Message Us</span><span class="ar-only">راسلينا</span>
-      </a>
-    </div>
-  </div>
-</header>
-
-<!-- ================= HERO ================= -->
-<section class="hero" id="hero">
-  <div class="wrap hero-inner">
-    <div class="seal"><span>E&amp;A</span></div>
-    <span class="eyebrow en-only">Digital Wedding Invitations</span>
-    <span class="eyebrow ar-only">دعوات جواز ديچيتال</span>
-    <h1>
-      <span class="en-only">Your Story,<br>Beautifully Sent</span>
-      <span class="ar-only">قصتك… تتحكي<br><span class="script">بشكل يليق بيها</span></span>
-    </h1>
-    <p class="lead en-only">Clean, modern invitation templates for the modern bride — personalized with your names, your colors, your details, and sent straight to your guests' phones.</p>
-    <p class="lead ar-only">تصاميم دعوات نضيفة وعصرية، بأسمائكم وألوانكم وتفاصيلكم، وجاهزة تتبعت لضيوفك على الموبايل في ثانية.</p>
-    <div class="hero-ctas">
-      <a href="#templates" class="btn btn-outline-cream">
-        <span class="en-only">Browse Templates</span><span class="ar-only">شوفي التصاميم</span>
-      </a>
-      <a href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener" class="btn" style="background:var(--gold-500);color:var(--maroon-950);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
-        <span class="en-only">DM Us on Instagram</span><span class="ar-only">راسلينا على انستجرام</span>
-      </a>
-    </div>
-
-    <div class="hero-frame-strip">
-      <div class="mini-invite fade-in"><div class="names">M &amp; Y</div><div class="rule"></div><div class="date en-only">12 · 09 · 26</div><div class="date ar-only">12 . 9 . 26</div></div>
-      <div class="mini-invite fade-in"><div class="names">A &amp; K</div><div class="rule"></div><div class="date en-only">05 · 11 · 26</div><div class="date ar-only">5 . 11 . 26</div></div>
-      <div class="mini-invite fade-in"><div class="names">S &amp; O</div><div class="rule"></div><div class="date en-only">21 · 02 · 27</div><div class="date ar-only">21 . 2 . 27</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= PROCESS ================= -->
-<section class="process fade-in" id="process">
-  <div class="wrap">
-    <div class="section-head fade-in">
-      <span class="eyebrow en-only">How It Works</span>
-      <span class="eyebrow ar-only">إزاي بنشتغل</span>
-      <h2><span class="en-only">Three Steps to Your Invitation</span><span class="ar-only">تلات خطوات وتخلص دعوتك</span></h2>
-      <p class="en-only">No accounts, no forms to wrestle with — just you, your details, and a DM.</p>
-      <p class="ar-only">مفيش تسجيل ومفيش نماذج طويلة، كل اللي عليكي رسالة واحدة على انستجرام.</p>
-    </div>
-
-    <div class="process-grid">
-      <div class="process-step fade-in">
-        <div class="seal"><span>1</span></div>
-        <h3><span class="en-only">Pick a Template</span><span class="ar-only">اختاري التصميم</span></h3>
-        <p class="en-only">Browse the collection below and choose the design that feels like you.</p>
-        <p class="ar-only">تصفحي التصاميم تحت واختاري اللي يشبهكم.</p>
-        <div class="process-connector"></div>
-      </div>
-      <div class="process-step fade-in">
-        <div class="seal"><span>2</span></div>
-        <h3><span class="en-only">Send Your Details</span><span class="ar-only">بعتيلنا التفاصيل</span></h3>
-        <p class="en-only">Message us on Instagram with your names, date, colors, and story.</p>
-        <p class="ar-only">راسلينا على انستجرام بأسمائكم والتاريخ والألوان وقصتكم.</p>
-        <div class="process-connector"></div>
-      </div>
-      <div class="process-step fade-in">
-        <div class="seal"><span>3</span></div>
-        <h3><span class="en-only">Receive Your Link</span><span class="ar-only">استلمي اللينك</span></h3>
-        <p class="en-only">We build it, you review it, and your invitation is ready to send.</p>
-        <p class="ar-only">بنصممها، تراجعيها، وتبقى جاهزة تتبعت لضيوفك.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= TEMPLATES ================= -->
-<section class="templates fade-in" id="templates">
-  <div class="wrap">
-    <div class="section-head fade-in">
-      <span class="eyebrow en-only">The Collection</span>
-      <span class="eyebrow ar-only">التصاميم</span>
-      <h2><span class="en-only">Designed to Be Minimal</span><span class="ar-only">تصاميم نضيفة وبسيطة</span></h2>
-      <p class="en-only">No clutter, no clichés — just clean lines, considered type, and space for your story to breathe. Take a look at our live examples below.</p>
-      <p class="ar-only">مفيش زحمة ولا حاجة مكررة، بس خطوط نضيفة وتصميم مرتب يليق بقصتكم. شوفي الأمثلة الحية تحت.</p>
-    </div>
-
-    <div class="template-grid">
-
-      <div class="t-card theme-a fade-in">
-        <a href="https://everafterinvitesco.github.io/castlewedding/" target="_blank" rel="noopener" class="t-preview has-link has-image" style="text-decoration:none;color:inherit;">
-          <img src="castle-wedding-thumb.png" alt="Castle Wedding invitation template preview" style="object-position:top center;">
-          <span class="live-hint en-only">View Live Example</span><span class="live-hint ar-only">شوفي مثال حي</span>
-        </a>
-        <div class="t-body">
-          <div class="t-name">Castle Wedding</div>
-          <div class="t-tag en-only">A romantic, storybook-inspired design — as seen in Farah &amp; Omar's real invitation.</div>
-          <div class="t-tag ar-only">تصميم روميو وحكايات خيالية — من دعوة حقيقية لفرح وعمر.</div>
-          <div class="t-actions">
-            <a class="t-view" href="https://everafterinvitesco.github.io/castlewedding/" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span class="en-only">View Template</span><span class="ar-only">شوفي التصميم</span>
-            </a>
-            <a class="t-dm" href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
-              <span class="en-only">DM to Order</span><span class="ar-only">اطلبيه دلوقتي</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="t-card theme-b fade-in">
-        <a href="https://everafterinvitesco.github.io/The-golden-vows/" target="_blank" rel="noopener" class="t-preview has-link has-image" style="text-decoration:none;color:inherit;">
-          <img src="golden-vows-thumb.png" alt="The Golden Vows invitation template preview" style="object-position:top center;">
-          <span class="live-hint en-only">View Live Example</span><span class="live-hint ar-only">شوفي مثال حي</span>
-        </a>
-        <div class="t-body">
-          <div class="t-name">The Golden Vows</div>
-          <div class="t-tag en-only">An elegant wax-seal opening leads into a warm, heartfelt invitation with a keepsake family photo.</div>
-          <div class="t-tag ar-only">فتحة أنيقة بختم شمعي، تؤدي لدعوة دافية بصورة عائلية مميزة.</div>
-          <div class="t-actions">
-            <a class="t-view" href="https://everafterinvitesco.github.io/The-golden-vows/" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span class="en-only">View Template</span><span class="ar-only">شوفي التصميم</span>
-            </a>
-            <a class="t-dm" href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
-              <span class="en-only">DM to Order</span><span class="ar-only">اطلبيه دلوقتي</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="t-card theme-c fade-in">
-        <a href="https://everafterinvitesco.github.io/greek-wedding/#rsvp" target="_blank" rel="noopener" class="t-preview has-link has-image" style="text-decoration:none;color:inherit;">
-          <img src="greek-wedding-thumb.png" alt="Greek Wedding invitation template preview" style="object-position:top center;">
-          <span class="live-hint en-only">View Live Example</span><span class="live-hint ar-only">شوفي مثال حي</span>
-        </a>
-        <div class="t-body">
-          <div class="t-name">Greek Wedding</div>
-          <div class="t-tag en-only">A Santorini-inspired destination wedding design with a seashell seal opening and RSVP built right in.</div>
-          <div class="t-tag ar-only">تصميم مستوحى من سانتوريني لفرح ديستنيشن، بفتحة ختم صدفة وRSVP مدمج في الدعوة.</div>
-          <div class="t-actions">
-            <a class="t-view" href="https://everafterinvitesco.github.io/greek-wedding/#rsvp" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span class="en-only">View Template</span><span class="ar-only">شوفي التصميم</span>
-            </a>
-            <a class="t-dm" href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
-              <span class="en-only">DM to Order</span><span class="ar-only">اطلبيه دلوقتي</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="t-card theme-d fade-in">
-        <a href="https://everafterinvitesco.github.io/scratch-invite/" target="_blank" rel="noopener" class="t-preview has-link has-image" style="text-decoration:none;color:inherit;">
-          <img src="scratch-invite-thumb.png" alt="Scratch to Reveal invitation template preview" style="object-position:top center;">
-          <span class="live-hint en-only">View Live Example</span><span class="live-hint ar-only">شوفي مثال حي</span>
-        </a>
-        <div class="t-body">
-          <div class="t-name">Scratch to Reveal</div>
-          <div class="t-tag en-only">An interactive scratch-off save-the-date that unveils a vintage-framed photo and all the details underneath.</div>
-          <div class="t-tag ar-only">دعوة تفاعلية بخدعة "امسحي عشان تشوفي" بتكشف صورة بإطار كلاسيك وكل التفاصيل تحتها.</div>
-          <div class="t-actions">
-            <a class="t-view" href="https://everafterinvitesco.github.io/scratch-invite/" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span class="en-only">View Template</span><span class="ar-only">شوفي التصميم</span>
-            </a>
-            <a class="t-dm" href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
-              <span class="en-only">DM to Order</span><span class="ar-only">اطلبيه دلوقتي</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="t-card theme-e fade-in">
-        <a href="https://everafterinvitesco.github.io/Ever-after-Drive/" target="_blank" rel="noopener" class="t-preview has-link has-image" style="text-decoration:none;color:inherit;">
-          <img src="ever-after-drive-thumb.png" alt="Ever After Drive invitation template preview" style="object-position:top center;">
-          <span class="live-hint en-only">View Live Example</span><span class="live-hint ar-only">شوفي مثال حي</span>
-        </a>
-        <div class="t-body">
-          <div class="t-name">Ever After Drive</div>
-          <div class="t-tag en-only">A playful "just married" getaway car save-the-date that leads into a scrapbook-style photo gallery of your story.</div>
-          <div class="t-tag ar-only">دعوة "just married" مرحة بعربية العروسين، تؤدي لجاليري صور بشكل سكرابوك يحكي قصتكم.</div>
-          <div class="t-actions">
-            <a class="t-view" href="https://everafterinvitesco.github.io/Ever-after-Drive/" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span class="en-only">View Template</span><span class="ar-only">شوفي التصميم</span>
-            </a>
-            <a class="t-dm" href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
-              <span class="en-only">DM to Order</span><span class="ar-only">اطلبيه دلوقتي</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="templates-more fade-in">
-      <a href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener" class="btn btn-ghost">
-        <span class="en-only">Ask About More Designs on Instagram</span><span class="ar-only">اسألينا عن تصاميم تانية على انستجرام</span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ================= PRICING ================= -->
-<section class="pricing fade-in" id="pricing">
-  <div class="wrap">
-    <div class="section-head fade-in">
-      <span class="eyebrow en-only">Pricing</span>
-      <span class="eyebrow ar-only">الأسعار</span>
-      <h2><span class="en-only">Simple, Honest Pricing</span><span class="ar-only">سعر واضح وبسيط</span></h2>
-      <p class="en-only">One straightforward package, with a few extras if you want to make it even more yours.</p>
-      <p class="ar-only">باقة واحدة واضحة، ومعاها إضافات لو حابة تخصصي دعوتك أكتر.</p>
-    </div>
-
-    <div class="price-grid">
-
-      <div class="price-card featured fade-in">
-        <span class="badge en-only">Limited-Time Offer</span>
-        <span class="badge ar-only">عرض لفترة محدودة</span>
-        <h3><span class="en-only">Template Collection</span><span class="ar-only">باقة التصاميم</span></h3>
-        <p class="plan-note en-only">Our most popular option — pick, personalize, and send.</p>
-        <p class="plan-note ar-only">الباقة الأكتر طلبًا — اختاري، خصصي، وابعتي.</p>
-
-        <div class="price-row">
-          <span class="price-now">750 <span class="en-only" style="font-size:1rem;">EGP</span><span class="ar-only" style="font-size:1.1rem;">جنيه</span></span>
-          <span class="price-was">950 <span class="en-only">EGP</span><span class="ar-only">جنيه</span></span>
-        </div>
-        <div class="price-save en-only">Save 200 EGP for a limited time</div>
-        <div class="price-save ar-only">وفري 200 جنيه لفترة محدودة</div>
-
-        <ul>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="en-only">Choose any template from the collection</span><span class="ar-only">اختاري أي تصميم من الكولكشن</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="en-only">Your names, colors &amp; details applied</span><span class="ar-only">أسمائكم وألوانكم وتفاصيلكم في التصميم</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="en-only">Background music of your choice</span><span class="ar-only">موسيقى خلفية من اختياركم</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="en-only">Add or remove sections (Countdown, Location, Gallery)</span><span class="ar-only">إضافة أو حذف أقسام (العداد، الموقع، الصور)</span></li>
-        </ul>
-
-        <a href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener" class="btn" style="background:var(--gold-500);color:var(--maroon-950);">
-          <span class="en-only">Order on Instagram</span><span class="ar-only">اطلبي على انستجرام</span>
-        </a>
-      </div>
-
-      <div class="price-card fade-in">
-        <h3><span class="en-only">Fully Custom</span><span class="ar-only">تصميم خاص</span></h3>
-        <p class="plan-note en-only">A one-of-a-kind design, built around your story from scratch.</p>
-        <p class="plan-note ar-only">تصميم خاص بيكم بالكامل، من الصفر.</p>
-
-        <div class="price-row">
-          <span class="price-now" style="font-size:1.6rem;"><span class="en-only">Tailored Cost</span><span class="ar-only">سعر حسب التفاصيل</span></span>
-        </div>
-        <div class="price-save" style="color:var(--ink-700);opacity:0.75;"><span class="en-only">🔒 Depends on the details</span><span class="ar-only">🔒 السعر بيختلف حسب طلبكم</span></div>
-
-        <ul>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="en-only">100% custom design, built from scratch</span><span class="ar-only">تصميم 100% من الصفر</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="en-only">Any sections tailored exactly to your needs</span><span class="ar-only">أقسام مخصصة بالكامل لطلبكم</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="en-only">We bring any idea or concept to life</span><span class="ar-only">أي فكرة أو كونسيبت بنحولها لحقيقة</span></li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span class="en-only">Unlimited revisions until it's exactly right</span><span class="ar-only">تعديلات غير محدودة لغاية ما تحسي إنها هي</span></li>
-        </ul>
-
-        <a href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener" class="btn btn-ghost">
-          <span class="en-only">Ask on Instagram</span><span class="ar-only">اسأليني على انستجرام</span>
-        </a>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ================= FAQ ================= -->
-<section class="faq fade-in" id="faq">
-  <div class="wrap">
-    <div class="section-head fade-in">
-      <span class="eyebrow en-only">Questions</span>
-      <span class="eyebrow ar-only">أسئلة</span>
-      <h2><span class="en-only">Frequently Asked Questions</span><span class="ar-only">أسئلة بتتكرر كتير</span></h2>
-    </div>
-
-    <div class="faq-list">
-
-      <div class="faq-item fade-in">
-        <button class="faq-q">
-          <span class="en-only">What happens after I message you?</span><span class="ar-only">هيحصل إيه بعد ما أراسلكم؟</span>
-          <span class="plus"></span>
-        </button>
-        <div class="faq-a"><p class="en-only">Once you DM us your chosen template and details, we'll ask for your names, date, colors, and any photos. Our team then builds your personalized invitation for your review.</p>
-        <p class="ar-only">بعد ما تختاري التصميم وتراسلينا، هنطلب منك الأسماء والتاريخ والألوان وأي صور. وبعدين هنجهز الدعوة عشان تراجعيها.</p></div>
-      </div>
-
-      <div class="faq-item fade-in">
-        <button class="faq-q">
-          <span class="en-only">Can I include my own photos?</span><span class="ar-only">ممكن أضيف صوري الخاصة؟</span>
-          <span class="plus"></span>
-        </button>
-        <div class="faq-a"><p class="en-only">Yes! Every template allows you to add your own photos and gallery into the design.</p>
-        <p class="ar-only">طبعًا! كل التصاميم بتسمحلك تضيفي صورك وجاليري خاص بيكم.</p></div>
-      </div>
-
-      <div class="faq-item fade-in">
-        <button class="faq-q">
-          <span class="en-only">Can details be changed later?</span><span class="ar-only">ممكن أعدل التفاصيل بعدين؟</span>
-          <span class="plus"></span>
-        </button>
-        <div class="faq-a"><p class="en-only">We offer a limited round of revisions on the Template Collection, and unlimited revisions on the Fully Custom plan, so dates, locations, or wording can be updated if needed.</p>
-        <p class="ar-only">في باقة التصاميم بيكون فيه عدد محدود من التعديلات، وفي التصميم الخاص التعديلات مفتوحة، عشان تقدري تغيري التاريخ أو المكان أو أي كلام لو احتاج الأمر.</p></div>
-      </div>
-
-      <div class="faq-item fade-in">
-        <button class="faq-q">
-          <span class="en-only">How long does it take?</span><span class="ar-only">هتستغرق قد إيه؟</span>
-          <span class="plus"></span>
-        </button>
-        <div class="faq-a"><p class="en-only">Template Collection designs usually take 2-4 business days after we receive your details. Fully Custom designs take 3-7 days depending on complexity.</p>
-        <p class="ar-only">باقة التصاميم بتاخد من 2 لـ 4 أيام عمل بعد استلام تفاصيلك، والتصميم الخاص بياخد من 3 لـ 7 أيام حسب التعقيد.</p></div>
-      </div>
-
-      <div class="faq-item fade-in">
-        <button class="faq-q">
-          <span class="en-only">Do I get to review it before it's final?</span><span class="ar-only">هشوفها قبل ما تخلص؟</span>
-          <span class="plus"></span>
-        </button>
-        <div class="faq-a"><p class="en-only">Absolutely. We'll share a live preview link so you can check the design and text, and we'll refine it until it feels right.</p>
-        <p class="ar-only">بالتأكيد. هنبعتلك لينك معاينة عشان تشوفي التصميم والكلام، وهنعدل لحد ما يعجبك.</p></div>
-      </div>
-
-      <div class="faq-item fade-in">
-        <button class="faq-q">
-          <span class="en-only">How many guests can view the invitation?</span><span class="ar-only">فيه حد أقصى لعدد الضيوف؟</span>
-          <span class="plus"></span>
-        </button>
-        <div class="faq-a"><p class="en-only">No limit at all. You get one unique link and can share it with as many guests as you like.</p>
-        <p class="ar-only">مفيش حد أقصى خالص. بتاخدي لينك واحد وتقدري تبعتيه لأي عدد ضيوف حابة.</p></div>
-      </div>
-
-      <div class="faq-item fade-in">
-        <button class="faq-q">
-          <span class="en-only">How long does the link stay active?</span><span class="ar-only">اللينك يفضل شغال قد إيه؟</span>
-          <span class="plus"></span>
-        </button>
-        <div class="faq-a"><p class="en-only">Your invitation link stays active forever, as a lasting digital memory of your day.</p>
-        <p class="ar-only">لينك الدعوة بيفضل شغال للأبد كذكرى ديچيتال دايمة ليومكم.</p></div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ================= CLOSING CTA ================= -->
-<section class="closing fade-in">
-  <div class="wrap">
-    <div class="seal"><span>E&amp;A</span></div>
-    <h2><span class="en-only">Let Us Craft Yours</span><span class="ar-only">خلينا نصمملكم دعوتكم</span></h2>
-    <p class="en-only">Every great story deserves a beautiful beginning. Message us on Instagram to get started.</p>
-    <p class="ar-only">كل قصة حلوة تستحق بداية تليق بيها. راسلينا على انستجرام ونبدأ سوا.</p>
-    <a href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener" class="btn" style="background:var(--gold-500);color:var(--maroon-950);">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
-      <span class="en-only">DM Us on Instagram</span><span class="ar-only">راسلينا على انستجرام</span>
-    </a>
-  </div>
-</section>
-
-<!-- ================= FOOTER ================= -->
-<footer>
-  <div class="wrap">
-    <div class="footer-grid">
-      <div class="fade-in">
-        <div class="footer-brand">
-          <img src="logo.png" alt="EverAfterInvites">
-          <span>EverAfterInvites</span>
-        </div>
-        <p class="tag en-only">Clean, modern digital wedding invitations, crafted around your story.</p>
-        <p class="tag ar-only">دعوات جواز ديچيتال نضيفة وعصرية، مصممة عشان تحكي قصتكم.</p>
-      </div>
-      <div class="fade-in">
-        <h4 class="en-only">Navigation</h4><h4 class="ar-only">روابط</h4>
-        <ul>
-          <li><a href="#templates"><span class="en-only">Designs</span><span class="ar-only">التصاميم</span></a></li>
-          <li><a href="#pricing"><span class="en-only">Pricing</span><span class="ar-only">الأسعار</span></a></li>
-          <li><a href="#faq"><span class="en-only">FAQ</span><span class="ar-only">أسئلة</span></a></li>
-        </ul>
-      </div>
-      <div class="fade-in">
-        <h4 class="en-only">Contact</h4><h4 class="ar-only">تواصل معنا</h4>
-        <ul>
-          <li><a href="https://ig.me/m/_everafterinvites_" target="_blank" rel="noopener"><span class="en-only">Instagram DM</span><span class="ar-only">راسلينا على انستجرام</span></a></li>
-          <li><a href="https://www.instagram.com/_everafterinvites_/" target="_blank" rel="noopener">@_everafterinvites_</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 EverAfterInvites. <span class="en-only">All rights reserved.</span><span class="ar-only">كل الحقوق محفوظة.</span></span>
-    </div>
-  </div>
-</footer>
-
-<script>
-  // Language toggle
-  const langToggle = document.getElementById('langToggle');
-  langToggle.addEventListener('click', () => {
-    const isRtl = document.body.classList.toggle('rtl');
-    document.documentElement.setAttribute('lang', isRtl ? 'ar' : 'en');
-    document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
-    langToggle.textContent = isRtl ? 'EN / AR' : 'EN / AR';
-  });
-
-  // FAQ accordion
-  document.querySelectorAll('.faq-item').forEach(item => {
-    const q = item.querySelector('.faq-q');
-    const a = item.querySelector('.faq-a');
-    q.addEventListener('click', () => {
-      const isOpen = item.classList.contains('open');
-      document.querySelectorAll('.faq-item.open').forEach(other => {
-        if(other !== item){
-          other.classList.remove('open');
-          other.querySelector('.faq-a').style.maxHeight = null;
+};
+
+const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext, index, onReveal }) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [scratchPercent, setScratchPercent] = useState(0);
+
+  // Initialize Canvas with Gold Foil Texture
+  const drawGoldFoil = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, width, height);
+
+    // Create Metallic Gold Radial & Linear Gradient
+    const gradient = ctx.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, '#BF953F');
+    gradient.addColorStop(0.25, '#FCF6BA');
+    gradient.addColorStop(0.5, '#B38728');
+    gradient.addColorStop(0.75, '#FBF5B7');
+    gradient.addColorStop(1, '#AA771C');
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+
+    // Add subtle metallic sparkle texture dots
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    for (let i = 0; i < 400; i++) {
+      const rx = Math.random() * width;
+      const ry = Math.random() * height;
+      const r = Math.random() * 2.5;
+      ctx.beginPath();
+      ctx.arc(rx, ry, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Draw Gold Foil Circular Border Frame
+    ctx.strokeStyle = '#8A6218';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(width / 2, height / 2, width / 2 - 4, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Center "Scratch Me" overlay text
+    ctx.save();
+    ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = '#4A340C';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✨ SCRATCH', width / 2, height / 2);
+    ctx.restore();
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const size = 300; // Increased canvas resolution for maximum crispness across all screens
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      drawGoldFoil(ctx, size, size);
+    }
+  }, [drawGoldFoil]);
+
+  // Calculate Scratched Percentage
+  const calculatePercent = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || isRevealed) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    try {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imageData.data;
+      let clearedPixels = 0;
+      const totalPixels = pixels.length / 4;
+
+      for (let i = 3; i < pixels.length; i += 4) {
+        if (pixels[i] < 128) { // pixel is cleared or semi-transparent
+          clearedPixels++;
         }
-      });
-      item.classList.toggle('open', !isOpen);
-      a.style.maxHeight = !isOpen ? a.scrollHeight + 'px' : null;
-    });
-  });
-
-  // Scroll reveal (plays once per element, then stops observing it)
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting){
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
       }
+
+      // Calculate percentage relative to canvas area
+      const percent = Math.min(100, Math.round((clearedPixels / totalPixels) * 100 * 1.2));
+      setScratchPercent(percent);
+
+      if (percent >= 35 && !isRevealed) {
+        setIsRevealed(true);
+        if (onReveal) onReveal();
+        
+        // Trigger celebratory gold confetti sparkle for this circle
+        fireConfetti({
+          particleCount: 60,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#C8A85D', '#E2C779', '#FAF7F2', '#B38728', '#D4AF37'],
+        });
+      }
+    } catch (err) {
+      console.warn('Scratch percent check error:', err);
+    }
+  }, [isRevealed, onReveal]);
+
+  // Handle Scratch Action on Canvas
+  const scratchAt = useCallback((x: number, y: number) => {
+    if (isRevealed) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, 42, 0, Math.PI * 2); // Larger scratch stroke radius for smooth clearing
+    ctx.fill();
+
+    calculatePercent();
+  }, [isRevealed, calculatePercent]);
+
+  // Setup Global Window Pointer & Touch Listeners for Smooth Scratching
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || isRevealed) return;
+
+    let scratching = false;
+
+    const getCoordinates = (e: MouseEvent | TouchEvent | PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      let clientX = 0;
+      let clientY = 0;
+
+      if ('touches' in e && e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else if ('clientX' in e) {
+        clientX = (e as MouseEvent).clientX;
+        clientY = (e as MouseEvent).clientY;
+      }
+
+      const x = ((clientX - rect.left) / rect.width) * canvas.width;
+      const y = ((clientY - rect.top) / rect.height) * canvas.height;
+      return { x, y };
+    };
+
+    const handleStart = (e: Event) => {
+      scratching = true;
+      const { x, y } = getCoordinates(e as any);
+      scratchAt(x, y);
+    };
+
+    const handleMove = (e: Event) => {
+      if (!scratching) return;
+      if (e.cancelable) e.preventDefault();
+      const { x, y } = getCoordinates(e as any);
+      scratchAt(x, y);
+    };
+
+    const handleEnd = () => {
+      scratching = false;
+    };
+
+    canvas.addEventListener('pointerdown', handleStart);
+    window.addEventListener('pointermove', handleMove, { passive: false });
+    window.addEventListener('pointerup', handleEnd);
+
+    canvas.addEventListener('touchstart', handleStart, { passive: false });
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+
+    return () => {
+      canvas.removeEventListener('pointerdown', handleStart);
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleEnd);
+
+      canvas.removeEventListener('touchstart', handleStart);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleEnd);
+    };
+  }, [scratchAt, isRevealed]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.8, delay: index * 0.2 }}
+      className="flex flex-col items-center select-none shrink-0 w-[112px] xs:w-36 sm:max-w-[280px]"
+    >
+      <div className="font-sans text-[11px] xs:text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#C8A85D] mb-2 sm:mb-3 font-semibold text-center">
+        {title}
+      </div>
+
+      {/* Maximized circle size across all screen widths */}
+      <div className="relative w-[108px] h-[108px] xs:w-36 xs:h-36 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full shadow-2xl overflow-hidden border-2 border-[#C8A85D]/40 bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] flex flex-col items-center justify-center text-center p-1 sm:p-5 group">
+        {/* Hidden Revealed Layer Underneath */}
+        <div className="flex flex-col items-center justify-center z-0 w-full h-full select-none px-1">
+          <span className={`font-serif font-bold text-[#2C2C2C] tracking-tight text-center leading-none ${
+            value.length > 5 ? 'text-lg xs:text-2xl sm:text-5xl md:text-6xl' : 'text-3xl xs:text-5xl sm:text-7xl md:text-8xl'
+          }`}>
+            {value}
+          </span>
+          <span className="font-sans text-[9px] xs:text-xs sm:text-base text-[#C8A85D] uppercase tracking-widest mt-1 sm:mt-2 font-medium">
+            {subtext}
+          </span>
+          {isRevealed && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="mt-1 sm:mt-2 text-[#C8A85D]"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
+            </motion.div>
+          )}
+        </div>
+
+        {/* Scratchable Canvas Layer */}
+        {!isRevealed && (
+          <motion.canvas
+            ref={canvasRef}
+            animate={isRevealed ? { opacity: 0, scale: 1.05 } : { opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="absolute inset-0 w-full h-full cursor-pointer z-10 touch-none rounded-full"
+          />
+        )}
+      </div>
+
+      {/* Status Indicator */}
+      <div className="mt-2 sm:mt-3 min-h-[16px] sm:min-h-[20px] flex items-center gap-1">
+        {isRevealed && (
+          <span className="font-sans text-[10px] sm:text-sm text-[#C8A85D] font-medium tracking-wider uppercase flex items-center gap-1">
+            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Revealed
+          </span>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+export const ScratchDate: React.FC = () => {
+  const [revealedCount, setRevealedCount] = useState(0);
+
+  const handleCircleReveal = useCallback(() => {
+    setRevealedCount((prev) => {
+      const nextCount = prev + 1;
+      if (nextCount === 3) {
+        // Trigger Grand Celebration Confetti Burst
+        const duration = 3 * 1000;
+        const animationEnd = Date.now() + duration;
+
+        const frame = () => {
+          fireConfetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 60,
+            origin: { x: 0, y: 0.65 },
+            colors: ['#C8A85D', '#E2C779', '#FAF7F2', '#B38728'],
+          });
+          fireConfetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 60,
+            origin: { x: 1, y: 0.65 },
+            colors: ['#C8A85D', '#E2C779', '#FAF7F2', '#B38728'],
+          });
+
+          if (Date.now() < animationEnd) {
+            requestAnimationFrame(frame);
+          }
+        };
+        frame();
+      }
+      return nextCount;
     });
-  }, {threshold:0.15});
-  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  }, []);
 
-  // Mobile nav fallback: smooth scroll already handled via CSS scroll-behavior
-</script>
+  return (
+    <section id="scratch-date" className="py-24 px-1 sm:px-6 bg-[#FAF7F2] relative overflow-hidden">
+      {/* Decorative Gold Accent Flourish */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#C8A85D]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#C8A85D]/10 rounded-full blur-3xl pointer-events-none" />
 
-</body>
-</html>
+      <div className="max-w-6xl mx-auto text-center relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: "0.8" }}
+          className="mb-4 inline-flex items-center gap-2 text-[#C8A85D]"
+        >
+          <Calendar className="w-5 h-5" />
+          <span className="font-sans text-xs uppercase tracking-[0.3em] font-semibold">
+            Interactive Reveal
+          </span>
+        </motion.div>
+
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: "0.8", delay: 0.1 }}
+          className="font-serif text-4xl sm:text-5xl md:text-6xl text-[#2C2C2C] tracking-wide mb-4"
+        >
+          Our Wedding Date
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: "0.8", delay: 0.2 }}
+          className="font-sans text-sm sm:text-base text-[#2C2C2C]/70 max-w-lg mx-auto mb-10 sm:mb-16 px-4"
+        >
+          Scratch off the golden foil circles below using your mouse or finger to unveil when we say "I do".
+        </motion.p>
+
+        {/* Tighter gap spacing to maximize circle width on narrow mobile screens */}
+        <div className="flex flex-row items-center justify-center gap-1.5 xs:gap-3 sm:gap-10 md:gap-16 w-full pb-4 px-1">
+          <SingleScratchCircle
+            title="Day"
+            value="24"
+            subtext="Friday"
+            index={0}
+            onReveal={handleCircleReveal}
+          />
+          <SingleScratchCircle
+            title="Month"
+            value="September"
+            subtext="Autumn"
+            index={1}
+            onReveal={handleContextReveal ? handleContextReveal : handleCircleReveal}
+          />
+          <SingleScratchCircle
+            title="Year"
+            value="2027"
+            subtext="Save The Year"
+            index={2}
+            onReveal={handleCircleReveal}
+          />
+        </div>
+
+        {revealedCount === 3 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-8 sm:mt-12 inline-block px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-[#C8A85D]/15 border border-[#C8A85D]/40 text-[#8A6218] font-serif text-base sm:text-xl font-medium shadow-sm"
+          >
+            ✨ Save the date: September 24, 2027 ✨
+          </motion.div>
+        )}
+      </div>
+    </section>
+  );
+};
