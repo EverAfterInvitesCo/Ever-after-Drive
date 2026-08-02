@@ -7,18 +7,17 @@ interface IntroVideoProps {
 }
 
 export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete, videoSrc = `${import.meta.env.BASE_URL}curtain.mp4` }) => {
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const [isFading, setIsFading] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    // Timer fallback in case video event doesn't fire or video finishes in ~6-8 seconds
+    // Fallback timer if video takes too long to load or reach end event
     const fallbackTimer = setTimeout(() => {
       if (!isFading) {
         handleFinish();
       }
-    }, 10000);
+    }, 12000);
 
     return () => clearTimeout(fallbackTimer);
   }, [isFading]);
@@ -28,20 +27,23 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete, videoSrc = `
     setIsFading(true);
     setTimeout(() => {
       onComplete();
-    }, 1200); // 1.2s smooth cinematic fade duration
+    }, 1000);
   };
 
-  const handleVideoLoaded = () => {
-    setIsVideoLoaded(true);
+  const handleCanPlay = () => {
+    setIsVideoReady(true);
     if (videoRef.current) {
       videoRef.current.play().catch((err) => {
         console.warn('Autoplay restricted by browser policy:', err);
+        // If autoplay fails, skip straight to the main invitation so the user isn't stuck on a paused video frame
+        handleFinish();
       });
     }
   };
 
-  const handleVideoError = () => {
-    setHasError(true);
+  const handleError = () => {
+    // If video fails to load entirely, bypass immediately
+    handleFinish();
   };
 
   return (
@@ -50,51 +52,23 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete, videoSrc = `
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1C1815] text-[#FAF7F2] overflow-hidden select-none"
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black overflow-hidden select-none"
         >
-          {/* Main Intro Video */}
-          {!hasError ? (
-            <video
-              ref={videoRef}
-              src={videoSrc}
-              playsInline
-              autoPlay
-              muted
-              onLoadedData={handleVideoLoaded}
-              onEnded={handleFinish}
-              onError={handleVideoError}
-              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
-            />
-          ) : null}
-
-          {/* Animated Fallback Silk Curtain (Renders when video is missing or loading) */}
-          {(hasError || !isVideoLoaded) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-[#241F1C] via-[#1A1614] to-[#120F0E]">
-              {/* Elegant Silk Curtain Graphic / Decorative Framing */}
-              <div className="absolute inset-0 flex">
-                <motion.div
-                  initial={{ x: '0%' }}
-                  animate={isFading ? { x: '-100%' } : { x: '0%' }}
-                  transition={{ duration: 1.5, ease: [0.77, 0, 0.175, 1] }}
-                  className="w-1/2 h-full bg-gradient-to-r from-[#2F2620] to-[#1F1814] border-r border-[#C8A85D]/20 shadow-2xl relative"
-                >
-                  <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-black/40 to-transparent" />
-                  {/* Decorative Fold Lines */}
-                  <div className="h-full w-full bg-[radial-gradient(#C8A85D_1px,transparent_1px)] [background-size:24px_24px] opacity-5" />
-                </motion.div>
-                <motion.div
-                  initial={{ x: '0%' }}
-                  animate={isFading ? { x: '100%' } : { x: '0%' }}
-                  transition={{ duration: 1.5, ease: [0.77, 0, 0.175, 1] }}
-                  className="w-1/2 h-full bg-gradient-to-l from-[#2F2620] to-[#1F1814] border-l border-[#C8A85D]/20 shadow-2xl relative"
-                >
-                  <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-black/40 to-transparent" />
-                  <div className="h-full w-full bg-[radial-gradient(#C8A85D_1px,transparent_1px)] [background-size:24px_24px] opacity-5" />
-                </motion.div>
-              </div>
-            </div>
-          )}
+          {/* Main Intro Video - Hidden completely until ready to play, removing any flash of blank background or fallback graphics */}
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            playsInline
+            autoPlay
+            muted
+            onCanPlayThrough={handleCanPlay}
+            onEnded={handleFinish}
+            onError={handleError}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+              isVideoReady ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
         </motion.div>
       )}
     </AnimatePresence>
