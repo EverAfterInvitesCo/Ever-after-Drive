@@ -76,7 +76,7 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const size = 240; // Increased internal canvas resolution for sharper rendering
+    const size = 300; // Increased canvas resolution for maximum crispness across all screens
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
@@ -137,7 +137,7 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
 
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(x, y, 32, 0, Math.PI * 2); // Increased scratch stroke radius for larger circles
+    ctx.arc(x, y, 38, 0, Math.PI * 2); // Larger scratch stroke radius for easier clearing on mobile touch
     ctx.fill();
 
     calculatePercent();
@@ -210,22 +210,22 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.8, delay: index * 0.2 }}
-      className="flex flex-col items-center select-none shrink-0"
+      className="flex flex-col items-center select-none shrink-0 w-full max-w-[280px]"
     >
       <div className="font-sans text-xs sm:text-sm uppercase tracking-[0.2em] text-[#C8A85D] mb-3 font-semibold">
         {title}
       </div>
 
-      {/* Larger Circle Container - scaled up significantly for a more prominent focal point */}
-      <div className="relative w-36 h-36 xs:w-40 xs:h-40 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full shadow-2xl overflow-hidden border-2 border-[#C8A85D]/40 bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] flex flex-col items-center justify-center text-center p-3 sm:p-5 group">
+      {/* Much larger circle container sized generously for mobile and desktop screens */}
+      <div className="relative w-44 h-44 xs:w-48 xs:h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full shadow-2xl overflow-hidden border-2 border-[#C8A85D]/40 bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] flex flex-col items-center justify-center text-center p-3 sm:p-5 group">
         {/* Hidden Revealed Layer Underneath */}
         <div className="flex flex-col items-center justify-center z-0 w-full h-full select-none px-2">
           <span className={`font-serif font-bold text-[#2C2C2C] tracking-tight text-center leading-none ${
-            value.length > 5 ? 'text-xl xs:text-2xl sm:text-4xl md:text-5xl' : 'text-3xl xs:text-4xl sm:text-6xl md:text-7xl'
+            value.length > 5 ? 'text-2xl xs:text-3xl sm:text-5xl md:text-6xl' : 'text-4xl xs:text-5xl sm:text-7xl md:text-8xl'
           }`}>
             {value}
           </span>
-          <span className="font-sans text-[11px] xs:text-xs sm:text-base text-[#C8A85D] uppercase tracking-widest mt-1 sm:mt-2 font-medium">
+          <span className="font-sans text-xs xs:text-sm sm:text-base text-[#C8A85D] uppercase tracking-widest mt-1.5 sm:mt-2 font-medium">
             {subtext}
           </span>
           {isRevealed && (
@@ -339,8 +339,8 @@ export const ScratchDate: React.FC = () => {
           Scratch off the golden foil circles below using your mouse or finger to unveil when we say "I do".
         </motion.p>
 
-        {/* Horizontal Row Across All Screen Sizes */}
-        <div className="flex flex-row items-center justify-center gap-3 xs:gap-5 sm:gap-10 md:gap-16 w-full overflow-x-auto pb-4">
+        {/* Stacked vertically on mobile for large prominent circles, turning into a spacious horizontal row on larger screens */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-10 md:gap-16 w-full pb-4">
           <SingleScratchCircle
             title="Day"
             value="24"
