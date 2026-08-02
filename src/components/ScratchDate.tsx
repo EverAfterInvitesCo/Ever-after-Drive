@@ -57,14 +57,14 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
 
     // Draw Gold Foil Circular Border Frame
     ctx.strokeStyle = '#8A6218';
-    ctx.lineWidth = 8;
+    ctx.lineWidth = 10;
     ctx.beginPath();
-    ctx.arc(width / 2, height / 2, width / 2 - 4, 0, Math.PI * 2);
+    ctx.arc(width / 2, height / 2, width / 2 - 5, 0, Math.PI * 2);
     ctx.stroke();
 
     // Center "Scratch Me" overlay text
     ctx.save();
-    ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#4A340C';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -76,7 +76,7 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const size = 300; // Increased canvas resolution for maximum crispness across all screens
+    const size = 350; // Increased canvas resolution for maximum crispness
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
@@ -137,7 +137,7 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
 
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(x, y, 42, 0, Math.PI * 2); // Larger scratch stroke radius for smooth clearing
+    ctx.arc(x, y, 50, 0, Math.PI * 2); // Even larger scratch stroke radius for easier clearing
     ctx.fill();
 
     calculatePercent();
@@ -210,31 +210,31 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.8, delay: index * 0.2 }}
-      className="flex flex-col items-center select-none shrink-0 w-[112px] xs:w-36 sm:max-w-[280px]"
+      className="flex flex-col items-center select-none shrink-0 w-[130px] xs:w-44 sm:max-w-[340px]"
     >
-      <div className="font-sans text-[11px] xs:text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#C8A85D] mb-2 sm:mb-3 font-semibold text-center">
+      <div className="font-sans text-xs xs:text-sm sm:text-base uppercase tracking-[0.2em] text-[#C8A85D] mb-3 font-semibold text-center">
         {title}
       </div>
 
-      {/* Maximized circle size across all screen widths */}
-      <div className="relative w-[108px] h-[108px] xs:w-36 xs:h-36 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full shadow-2xl overflow-hidden border-2 border-[#C8A85D]/40 bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] flex flex-col items-center justify-center text-center p-1 sm:p-5 group">
+      {/* Significantly increased circle sizes across all screens */}
+      <div className="relative w-[124px] h-[124px] xs:w-44 xs:h-44 sm:w-72 sm:h-72 md:w-80 md:h-80 rounded-full shadow-2xl overflow-hidden border-3 border-[#C8A85D]/50 bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] flex flex-col items-center justify-center text-center p-2 sm:p-6 group">
         {/* Hidden Revealed Layer Underneath */}
         <div className="flex flex-col items-center justify-center z-0 w-full h-full select-none px-1">
           <span className={`font-serif font-bold text-[#2C2C2C] tracking-tight text-center leading-none ${
-            value.length > 5 ? 'text-lg xs:text-2xl sm:text-5xl md:text-6xl' : 'text-3xl xs:text-5xl sm:text-7xl md:text-8xl'
+            value.length > 5 ? 'text-xl xs:text-3xl sm:text-6xl md:text-7xl' : 'text-4xl xs:text-6xl sm:text-8xl md:text-9xl'
           }`}>
             {value}
           </span>
-          <span className="font-sans text-[9px] xs:text-xs sm:text-base text-[#C8A85D] uppercase tracking-widest mt-1 sm:mt-2 font-medium">
+          <span className="font-sans text-[10px] xs:text-xs sm:text-lg text-[#C8A85D] uppercase tracking-widest mt-1.5 sm:mt-3 font-medium">
             {subtext}
           </span>
           {isRevealed && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="mt-1 sm:mt-2 text-[#C8A85D]"
+              className="mt-1 sm:mt-3 text-[#C8A85D]"
             >
-              <CheckCircle2 className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
+              <CheckCircle2 className="w-4 h-4 sm:w-7 sm:h-7" />
             </motion.div>
           )}
         </div>
@@ -251,10 +251,10 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
       </div>
 
       {/* Status Indicator */}
-      <div className="mt-2 sm:mt-3 min-h-[16px] sm:min-h-[20px] flex items-center gap-1">
+      <div className="mt-3 min-h-[20px] flex items-center gap-1">
         {isRevealed && (
-          <span className="font-sans text-[10px] sm:text-sm text-[#C8A85D] font-medium tracking-wider uppercase flex items-center gap-1">
-            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Revealed
+          <span className="font-sans text-xs sm:text-sm text-[#C8A85D] font-medium tracking-wider uppercase flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5" /> Revealed
           </span>
         )}
       </div>
@@ -305,7 +305,7 @@ export const ScratchDate: React.FC = () => {
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#C8A85D]/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#C8A85D]/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto text-center relative z-10">
+      <div className="max-w-7xl mx-auto text-center relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -339,8 +339,8 @@ export const ScratchDate: React.FC = () => {
           Scratch off the golden foil circles below using your mouse or finger to unveil when we say "I do".
         </motion.p>
 
-        {/* Tighter gap spacing to maximize circle width on narrow mobile screens */}
-        <div className="flex flex-row items-center justify-center gap-1.5 xs:gap-3 sm:gap-10 md:gap-16 w-full pb-4 px-1">
+        {/* Optimized responsive container layout for the larger circles */}
+        <div className="flex flex-row items-center justify-center gap-2 xs:gap-4 sm:gap-8 md:gap-12 w-full pb-4 px-1 overflow-x-auto sm:overflow-visible">
           <SingleScratchCircle
             title="Day"
             value="24"
@@ -368,7 +368,7 @@ export const ScratchDate: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-8 sm:mt-12 inline-block px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-[#C8A85D]/15 border border-[#C8A85D]/40 text-[#8A6218] font-serif text-base sm:text-xl font-medium shadow-sm"
+            className="mt-10 sm:mt-16 inline-block px-8 sm:px-10 py-3.5 sm:py-4 rounded-full bg-[#C8A85D]/15 border border-[#C8A85D]/40 text-[#8A6218] font-serif text-lg sm:text-2xl font-medium shadow-sm"
           >
             ✨ Save the date: September 24, 2027 ✨
           </motion.div>
