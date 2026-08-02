@@ -8,7 +8,7 @@ interface AudioPlayerProps {
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({ 
   autoPlay = true, 
-  audioSrc = `${import.meta.env.BASE_URL}elleila.mp3` 
+  audioSrc = `${import.meta.env.BASE_URL}fostanekelabyad.mp3` 
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
