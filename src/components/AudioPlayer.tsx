@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Volume2, VolumeX, Music } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 
-interface BackgroundMusicProps {
+interface AudioPlayerProps {
   autoPlay?: boolean;
   audioSrc?: string;
 }
 
-export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({ 
+export const AudioPlayer: React.FC<AudioPlayerProps> = ({ 
   autoPlay = true, 
   audioSrc = `${import.meta.env.BASE_URL}elleila.mp3` 
 }) => {
@@ -17,7 +17,7 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.volume = 0.4; // Set a pleasant, soft background volume level
+    audio.volume = 0.4;
     audio.loop = true;
 
     if (autoPlay) {
@@ -68,7 +68,6 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
     <>
       <audio ref={audioRef} src={audioSrc} preload="auto" />
       
-      {/* Floating Audio Toggle Button */}
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={toggleMusic}
@@ -81,7 +80,6 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
             <VolumeX className="w-5 h-5 text-[#FAF7F2]/60" />
           )}
 
-          {/* Subtle tooltip label */}
           <span className="absolute right-full mr-3 px-2.5 py-1 rounded-md bg-[#1C1815]/90 border border-[#C8A85D]/30 text-[10px] font-sans uppercase tracking-widest text-[#FAF7F2] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap shadow-md">
             {isPlaying ? "Music Playing" : "Play Music"}
           </span>
