@@ -64,7 +64,7 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
 
     // Center "Scratch Me" overlay text
     ctx.save();
-    ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#4A340C';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -137,7 +137,7 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
 
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(x, y, 38, 0, Math.PI * 2); // Larger scratch stroke radius for easier clearing on mobile touch
+    ctx.arc(x, y, 40, 0, Math.PI * 2); // Larger scratch stroke radius for easier clearing
     ctx.fill();
 
     calculatePercent();
@@ -210,22 +210,22 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.8, delay: index * 0.2 }}
-      className="flex flex-col items-center select-none shrink-0 w-[105px] xs:w-28 sm:max-w-[280px]"
+      className="flex flex-col items-center select-none shrink-0 w-[116px] xs:w-32 sm:max-w-[280px]"
     >
-      <div className="font-sans text-[10px] xs:text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#C8A85D] mb-2 sm:mb-3 font-semibold text-center">
+      <div className="font-sans text-[11px] xs:text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#C8A85D] mb-2 sm:mb-3 font-semibold text-center">
         {title}
       </div>
 
-      {/* Sized compact enough on smaller phones to sit side-by-side in a horizontal row, scaling up smoothly on tablets and desktops */}
-      <div className="relative w-24 h-24 xs:w-28 xs:h-28 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full shadow-2xl overflow-hidden border-2 border-[#C8A85D]/40 bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] flex flex-col items-center justify-center text-center p-1 sm:p-5 group">
+      {/* Increased mobile and desktop circle dimensions while keeping them neatly in a horizontal row on all screens */}
+      <div className="relative w-28 h-28 xs:w-32 xs:h-32 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full shadow-2xl overflow-hidden border-2 border-[#C8A85D]/40 bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] flex flex-col items-center justify-center text-center p-1 sm:p-5 group">
         {/* Hidden Revealed Layer Underneath */}
         <div className="flex flex-col items-center justify-center z-0 w-full h-full select-none px-1">
           <span className={`font-serif font-bold text-[#2C2C2C] tracking-tight text-center leading-none ${
-            value.length > 5 ? 'text-lg xs:text-xl sm:text-5xl md:text-6xl' : 'text-2xl xs:text-3xl sm:text-7xl md:text-8xl'
+            value.length > 5 ? 'text-xl xs:text-2xl sm:text-5xl md:text-6xl' : 'text-3xl xs:text-4xl sm:text-7xl md:text-8xl'
           }`}>
             {value}
           </span>
-          <span className="font-sans text-[9px] xs:text-[10px] sm:text-base text-[#C8A85D] uppercase tracking-widest mt-1 sm:mt-2 font-medium">
+          <span className="font-sans text-[10px] xs:text-xs sm:text-base text-[#C8A85D] uppercase tracking-widest mt-1 sm:mt-2 font-medium">
             {subtext}
           </span>
           {isRevealed && (
@@ -234,7 +234,7 @@ const SingleScratchCircle: React.FC<DateCircleProps> = ({ title, value, subtext,
               animate={{ scale: 1 }}
               className="mt-1 sm:mt-2 text-[#C8A85D]"
             >
-              <CheckCircle2 className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
+              <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6" />
             </motion.div>
           )}
         </div>
@@ -339,8 +339,8 @@ export const ScratchDate: React.FC = () => {
           Scratch off the golden foil circles below using your mouse or finger to unveil when we say "I do".
         </motion.p>
 
-        {/* Forced horizontal flex row on phones and up, maintaining compact spacing for smaller screens */}
-        <div className="flex flex-row items-center justify-center gap-3 xs:gap-5 sm:gap-10 md:gap-16 w-full pb-4">
+        {/* Horizontal flex row layout with optimized spacing for the larger circles */}
+        <div className="flex flex-row items-center justify-center gap-3 xs:gap-4 sm:gap-10 md:gap-16 w-full pb-4">
           <SingleScratchCircle
             title="Day"
             value="24"
