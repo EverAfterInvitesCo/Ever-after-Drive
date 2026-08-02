@@ -310,7 +310,7 @@ export const ScratchDate: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: "0.8" }}
+          transition={{ duration: 0.8 }}
           className="mb-4 inline-flex items-center gap-2 text-[#C8A85D]"
         >
           <Calendar className="w-5 h-5" />
@@ -323,7 +323,7 @@ export const ScratchDate: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: "0.8", delay: 0.1 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
           className="font-serif text-4xl sm:text-5xl md:text-6xl text-[#2C2C2C] tracking-wide mb-4"
         >
           Our Wedding Date
@@ -333,7 +333,7 @@ export const ScratchDate: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: "0.8", delay: 0.2 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
           className="font-sans text-sm sm:text-base text-[#2C2C2C]/70 max-w-lg mx-auto mb-10 sm:mb-16 px-4"
         >
           Scratch off the golden foil circles below using your mouse or finger to unveil when we say "I do".
@@ -353,7 +353,7 @@ export const ScratchDate: React.FC = () => {
             value="September"
             subtext="Autumn"
             index={1}
-            onReveal={handleContextReveal ? handleContextReveal : handleCircleReveal}
+            onReveal={handleCircleReveal}
           />
           <SingleScratchCircle
             title="Year"
